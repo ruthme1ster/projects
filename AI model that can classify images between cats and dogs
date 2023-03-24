@@ -1,0 +1,65 @@
+import tensorflow as tf
+from tensorflow.keras import layers
+
+# Load the dataset
+train_ds = tf.keras.preprocessing.image_dataset_from_directory(
+    "path/to/training/data",
+    validation_split=0.2,
+    subset="training",
+    seed=123,
+    image_size=(128, 128),
+    batch_size=32,
+)
+val_ds = tf.keras.preprocessing.image_dataset_from_directory(
+    "path/to/training/data",
+    validation_split=0.2,
+    subset="validation",
+    seed=123,
+    image_size=(128, 128),
+    batch_size=32,
+)
+
+# Define the model
+model = tf.keras.Sequential([
+    layers.experimental.preprocessing.Rescaling(1./255),
+    layers.Conv2D(32, 3, activation='relu'),
+    layers.MaxPooling2D(),
+    layers.Dropout(0.2),
+    layers.Conv2D(64, 3, activation='relu'),
+    layers.MaxPooling2D(),
+    layers.Dropout(0.2),
+    layers.Conv2D(128, 3, activation='relu'),
+    layers.MaxPooling2D(),
+    layers.Flatten(),
+    layers.Dense(128, activation='relu'),
+    layers.Dense(2)
+])
+
+# Compile the model
+model.compile(
+    optimizer='adam',
+    loss=tf.losses.SparseCategoricalCrossentropy(from_logits=True),
+    metrics=['accuracy']
+)
+
+# Train the model
+model.fit(train_ds, validation_data=val_ds, epochs=10)
+
+# Evaluate the model
+test_ds = tf.keras.preprocessing.image_dataset_from_directory(
+    "path/to/testing/data",
+    image_size=(128, 128),
+    batch_size=32,
+)
+loss, acc = model.evaluate(test_ds)
+print("Accuracy:", acc)
+
+# Use the model to classify new images
+new_image = tf.keras.preprocessing.image.load_img(
+    "path/to/new/image.jpg", target_size=(128, 128)
+)
+prediction = model.predict(tf.expand_dims(new_image, 0))
+if prediction[0][0] > prediction[0][1]:
+    print("The image is a cat.")
+else:
+    print("The image is a dog.")
