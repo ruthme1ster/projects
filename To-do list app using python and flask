@@ -1,0 +1,32 @@
+from flask import Flask, render_template, request, redirect
+
+app = Flask(__name__)
+
+# Create the to-do list
+todo_list = ['item 1', 'item 2', 'item 3']
+
+@app.route('/')
+def home():
+    return render_template('index.html', todo_list=todo_list)
+
+@app.route('/add', methods=['POST'])
+def add_item():
+    # Get the item from the form
+    item = request.form['item']
+
+    # Add the item to the to-do list
+    todo_list.append(item)
+
+    # Redirect back to the home page
+    return redirect('/')
+
+@app.route('/delete/<int:index>')
+def delete_item(index):
+    # Remove the item from the to-do list
+    del todo_list[index]
+
+    # Redirect back to the home page
+    return redirect('/')
+
+if __name__ == '__main__':
+    app.run()
